@@ -6,7 +6,7 @@ Snakemake pipeline to generate and QC genome coassemblies from G&T-Seq
 **THIS PIPELINE DOES NOT TRIM READS. IT EXPECTS THE INPUT READS TO HAVE ALREADY BEEN ADAPTER TRIMMED**
 
 
-The input to this pipeline is a comma separated file. The first line specifies the name of the coassembly, the following lines contain 4 comma separated values to specify the gDNA and cDNA librarys:
+The input to this pipeline is a comma separated file. The first line specifies the name of the coassembly, the following lines contain 4 comma separated values to specify the gDNA and cDNA libraries:
 
 - sample name
 - library type (gDNA or cDNA)
@@ -31,8 +31,7 @@ Sample4,cDNA,Sample4_cDNA_R1.fq.gz,Sample4_cDNA_R2.fq.gz
 Real example:
 
 ```
-Diatom
-Diatom_4
+Diatom_Coassembly
 S0002,gDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0002_OX5002404_A69456/trimmed_reads/S0002_OX5002404_A69456_gDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0002_OX5002404_A69456/trimmed_reads/S0002_OX5002404_A69456_gDNA_R2.trimmed.fastq.gz
 S0041,gDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0041_OX5002443_A69495/trimmed_reads/S0041_OX5002443_A69495_gDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0041_OX5002443_A69495/trimmed_reads/S0041_OX5002443_A69495_gDNA_R2.trimmed.fastq.gz
 S0042,cDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0042_OX5002444_A69496/trimmed_reads/S0042_OX5002444_A69496_cDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0042_OX5002444_A69496/trimmed_reads/S0042_OX5002444_A69496_cDNA_R2.trimmed.fastq.gz
