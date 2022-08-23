@@ -1,3 +1,6 @@
+testing/
+TEST_READS/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

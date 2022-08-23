@@ -1,0 +1,184 @@
+{
+    "__default__": {
+        "partition": "ei-medium,ei-long",
+        "memory": "8000",
+        "c": "4",
+        "J": "GT_Seq",
+        "time": "24:00:00",
+        "exclude": "t128n84"
+    },
+    "spades": {
+        "J": "spades",
+        "c": "12",
+        "memory": "120G",
+        "time": "96:00:00"
+    },
+    "filter_assembly_length": {
+        "J": "reformat",
+        "c": "1",
+        "time": "01:00:00"
+    },
+    "quast": {
+        "J": "quast",
+        "c": "1"
+    },
+    "quast_bins": {
+        "J": "quast_bins",
+        "c": "2"
+    },
+    "infoseq": {
+        "J": "infoseq",
+        "c": "1",
+        "time": "01:00:00"
+    },
+    "busco3": {
+        "J": "busco3",
+        "c": "6"
+    },
+    "busco4": {
+        "J": "busco4",
+        "c": "6"
+    },
+    "cegma": {
+        "J": "cegma",
+        "c": "8"
+    },
+    "stringtie": {
+        "J": "stringtie",
+        "c": 1,
+        "memory": "12G",
+        "time": "24:00:00"
+    },
+    "multiqc": {
+        "J": "multiqc",
+        "c": "1"
+    },
+    "minimap2": {
+        "J": "minimap2",
+        "c": "8",
+        "time": "24:00:00",
+        "memory": "32000"
+    },
+    "merge_minimap2": {
+        "J": "merge",
+        "c": "2",
+        "time": "12:00:00",
+        "memory": "24G"
+    },
+    "qualimap_bamqc": {
+        "J": "qualimap",
+        "c": "4",
+        "memory": "24G"
+    },
+    "qualimap_multi_bamqc_input": {
+        "J": "qualimap",
+        "c": "4",
+        "memory": "24G"
+    },
+    "qualimap_multi_bamqc": {
+        "J": "qualimap_multi_bamqc",
+        "c": "4",
+        "memory": "24G"
+    },
+    "hisat2_build": {
+        "J": "hisat2_index",
+        "c": "8",
+        "memory": "48000"
+    },
+    "hisat2": {
+        "J": "hisat2",
+        "c": "8",
+        "memory": "120G",
+        "time": "24:00:00"
+    },
+    "merge_hisat2": {
+        "J": "merge",
+        "c": "2",
+        "time": "12:00:00",
+        "memory": "24G"
+    },
+    "diamond": {
+        "J": "diamond",
+        "c": "16",
+        "memory": "64000",
+        "time": "48:00:00"
+    },
+    "megablast": {
+        "J": "megablast",
+        "c": "6",
+        "memory": "96000",
+        "time": "48:00:00"
+    },
+    "blobtools": {
+        "J": "blobtools",
+        "c": "1",
+        "memory": "24000",
+        "time": "1:00:00"
+    },
+    "CAT_classify": {
+        "J": "CAT_classify",
+        "c": "8",
+        "memory": "64000",
+        "time": "48:00:00"
+    },
+    "checkm": {
+        "J": "checkm",
+        "c": "8",
+        "memory": "96000",
+        "time": "24:00:00"
+    },
+    "barrnap": {
+        "J": "barrnap",
+        "c": "2"
+    },
+    "idxstats_minimap2": {
+        "J": "idxstats",
+        "c": "1"
+    },
+    "idxstats_hisat2": {
+        "J": "idxstats",    
+        "c": "1"
+    },
+    "jgi_summarize_bam_contig_depths": {
+        "J": "jgi_depth",
+        "c": "1",
+        "memory": "12000"
+    },
+    "metabat2": {
+        "J": "metabat2",
+        "c": "4",
+        "memory": "24000"
+    },
+    "metabat2_coverage": {
+        "J": "metabat2",
+        "c": "4",
+        "memory": "24000"
+    },
+    "tiara": {
+        "J": "tiara"
+    },
+    "eukrep": {
+        "J": "eukrep"
+    },
+    "parse_eukrep": {
+        "J": "parse_eukrep",
+        "c": "1",
+        "memory": "1000"
+    },
+    "parse_metabat2": {
+        "J": "parse_metabat2",
+        "c": "1",
+        "memory": "1000",
+        "time": "01:00:00"
+    },
+    "pr2_blast": {
+        "J": "pr2_blast",
+        "c": "2",
+        "time": "02:00:00"
+    },
+    "generate_summary": {
+        "J": "generate_summary",
+        "c": "1",
+        "time": "01:00:00"
+    }
+}
