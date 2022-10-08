@@ -41,8 +41,8 @@ with open(config["input"]) as f:
 
         sample_name = line[0]
         sample_type = line[1]
-        r1_path = line[2]
-        r2_path = line[3]
+        r1_path = realpath(line[2])
+        r2_path = realpath(line[3])
 
         if sample_type.upper() == "GDNA":
             if sample_name not in gDNA_libraries:
