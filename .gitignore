@@ -1,5 +1,7 @@
 testing/
 TEST_READS/
+*.dag
+*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
