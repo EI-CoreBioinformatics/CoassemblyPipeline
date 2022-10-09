@@ -5,7 +5,7 @@ input:
 # TODO
 # Optional tools to run
 run_checkm: true
-run_busco: true
+run_busco: false
 
 # SPAdes parameters
 kmers: "21,33,55,77"

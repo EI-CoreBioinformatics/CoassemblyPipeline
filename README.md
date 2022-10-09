@@ -13,6 +13,8 @@ The input to this pipeline is a comma separated file. The first line specifies t
 - path to forward reads
 - path to reverse reads
 
+**Sample names should not contain periods**
+
 
 Example:
 `input.csv`

@@ -84,22 +84,20 @@ cDNA_samples = list(cDNA_libraries)
 
 filtered_scaffolds_filename = join(assembly_name, "assembly", "scaffolds." + str(config["min_scaffold_length"]) + ".fasta")
 
-# ================================
-# SPECIFICATION OF SNAKEMAKE RULES
-# ================================
-
-TARGETS = []
-# TODO ONLY MERGE MINIMAP2 & HISAT2 ALIGNMENTS IF > 1 GDNA/CDNA SAMPLES
 # TODO allow show tools to be optional (checkm, busco)
 
+
+TARGETS = []
+# final summary
+TARGETS.append(join(assembly_name, assembly_name + "_summary.tsv"))
 #quast_report
 TARGETS.append(join(assembly_name, "quast", "report.txt"))
 #infoseq_summary
-TARGETS.append(join(assembly_name, "scaffolds." + str(config["min_scaffold_length"]) + ".tsv"))
+TARGETS.append(join(assembly_name, "assembly", "scaffolds." + str(config["min_scaffold_length"]) + ".tsv"))
 #gDNA_depth
 TARGETS.append(join(assembly_name, "gDNA_alignments", "depth.tsv"))
 #hisat2_alignments
-TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.bam"), sample = cDNA_samples))
+TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.bam"), sample = cDNA_samples))
 #metabat2_bins 
 TARGETS.append(expand(join(assembly_name, "metabat2", "{coverage}", "bin_members.tsv"), coverage = ["coverage", "no_coverage"]))
 #quast_report_bins
@@ -115,31 +113,32 @@ TARGETS.append(join(assembly_name, "blobtools", assembly_name + ".blobDB.bestsum
 #CAT_summary
 TARGETS.append(join(assembly_name, "CAT", assembly_name + ".CAT.summary.txt"))
 #busco_done
-TARGETS.append(join(assembly_name, "assembly", "busco.done"))
+if config["run_busco"] == "true":
+    TARGETS.append(join(assembly_name, "assembly", "busco.done"))
 
 if len(gDNA_samples) > 1:
     #qualimap_comparison_report
     TARGETS.append(join(assembly_name, "gDNA_alignments", "qualimap", "comparison", "multisampleBamQcReport.html"))
     #idxstats_gDNA
-    TARGETS.append(expand(join(assembly_name, "gDNA_alignments", "{sample}.idxstats.tsv"), sample = gDNA_samples + ["merged"]))
+    TARGETS.append(expand(join(assembly_name, "gDNA_alignments", "{sample}.gDNA.idxstats.tsv"), sample = gDNA_samples + ["merged"]))
     #qualimap_reports
     TARGETS.append(expand(join(assembly_name, "gDNA_alignments", "qualimap", "{sample}", "qualimapReport.html"), sample = gDNA_samples + ["merged"]))
 else:
     #idxstats_gDNA
-    TARGETS.append(expand(join(assembly_name, "gDNA_alignments", "{sample}.idxstats.tsv"), sample = gDNA_samples))
+    TARGETS.append(expand(join(assembly_name, "gDNA_alignments", "{sample}.gDNA.idxstats.tsv"), sample = gDNA_samples))
     #qualimap_reports
     TARGETS.append(expand(join(assembly_name, "gDNA_alignments", "qualimap", "{sample}", "qualimapReport.html"), sample = gDNA_samples))
 
 if len(cDNA_samples) > 1:
     #merged_hisat2_alignment
-    TARGETS.append(join(assembly_name, "cDNA_alignments", "merged.bam"))
+    TARGETS.append(join(assembly_name, "cDNA_alignments", "merged.cDNA.bam"))
     #idxstats_cDNA
-    TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.idxstats.tsv"), sample = cDNA_samples + ["merged"]))
+    TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.idxstats.tsv"), sample = cDNA_samples + ["merged"]))
     #stringtie_assembie
     TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.stringtie.gtf"), sample = cDNA_samples + ["merged"]))
 else:
     #idxstats_cDNA
-    TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.idxstats.tsv"), sample = cDNA_samples))
+    TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.idxstats.tsv"), sample = cDNA_samples))
     #stringtie_assembie
     TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.stringtie.gtf"), sample = cDNA_samples))
 
@@ -224,7 +223,7 @@ rule infoseq:
     input:
         filtered_scaffolds = filtered_scaffolds_filename
     output:
-        infoseq_summary = join(assembly_name, "scaffolds." + str(config["min_scaffold_length"]) + ".tsv")
+        infoseq_summary = join(assembly_name, "assembly", "scaffolds." + str(config["min_scaffold_length"]) + ".tsv")
     threads: 1
     log: join(assembly_name, "logs", "infoseq.log")
     benchmark: join(assembly_name, "benchmarks", "infoseq.tsv")
@@ -236,7 +235,7 @@ rule minimap2:
         r1 = lambda wildcards: gDNA_libraries[wildcards.sample][0],
         r2 = lambda wildcards: gDNA_libraries[wildcards.sample][1],
     output:
-        alignment = join(assembly_name, "gDNA_alignments", "{sample}.bam")
+        alignment = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam")
     threads: 4
     log: join(assembly_name, "logs", "minimap2_{sample}.log")
     benchmark: join(assembly_name, "benchmarks", "minimap2_{sample}.tsv")
@@ -244,10 +243,10 @@ rule minimap2:
 
 rule merge_minimap2:
     input:
-        alignments = expand(join(assembly_name, "gDNA_alignments", "{sample}.bam"), sample = gDNA_samples)
+        alignments = expand(join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam"), sample = gDNA_samples)
     output:
-        merged_alignment = join(assembly_name, "gDNA_alignments", "merged.bam"),
-        index = join(assembly_name, "gDNA_alignments", "merged.bam.bai")
+        merged_alignment = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam"),
+        index = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam.bai")
     threads: 2
     log: join(assembly_name, "logs", "samtools_merge_minimap2.log")
     benchmark: join(assembly_name, "benchmarks", "samtools_merge_minimap2.tsv")
@@ -255,9 +254,9 @@ rule merge_minimap2:
 
 rule idxstats_minimap2:
     input:
-        alignment = join(assembly_name, "gDNA_alignments", "{sample}.bam")
+        alignment = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam")
     output:
-        idxstats = join(assembly_name, "gDNA_alignments", "{sample}.idxstats.tsv")
+        idxstats = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.idxstats.tsv")
     threads: 1
     log: join(assembly_name, "logs", "samtools_idxstats_gDNA_{sample}.log")
     benchmark: join(assembly_name, "benchmarks", "samtools_idxstats_gDNA_{sample}.tsv")
@@ -265,7 +264,7 @@ rule idxstats_minimap2:
 
 rule qualimap_bamqc: 
     input:
-        alignment = join(assembly_name, "gDNA_alignments", "{sample}.bam")
+        alignment = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam")
     output:
         report = join(assembly_name, "gDNA_alignments", "qualimap", "{sample}", "qualimapReport.html")
     params:
@@ -318,7 +317,7 @@ rule hisat2:
     params:
         index_prefix = join(assembly_name, "cDNA_alignments", "hisat2_index", assembly_name)
     output:
-        alignment = join(assembly_name, "cDNA_alignments", "{sample}.bam"),
+        alignment = join(assembly_name, "cDNA_alignments", "{sample}.cDNA.bam"),
         summary = join(assembly_name, "cDNA_alignments", "{sample}.hisat2_summary.txt")
     threads: 4
     log: join(assembly_name, "logs", "hisat2_{sample}.log")
@@ -327,9 +326,9 @@ rule hisat2:
 
 rule merge_hisat2:
     input:
-        alignments = expand(join(assembly_name, "cDNA_alignments", "{sample}.bam"), sample = cDNA_samples)
+        alignments = expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.bam"), sample = cDNA_samples)
     output:
-        merged_alignment = join(assembly_name, "cDNA_alignments", "merged.bam")
+        merged_alignment = join(assembly_name, "cDNA_alignments", "merged.cDNA.bam")
     threads: 2
     log: join(assembly_name, "logs", "samtools_merge_hisat2.log")
     benchmark: join(assembly_name, "benchmarks", "samtools_merge_hisat2.tsv")
@@ -337,9 +336,9 @@ rule merge_hisat2:
 
 rule idxstats_hisat2:
     input:
-        alignment = join(assembly_name, "cDNA_alignments", "{sample}.bam")
+        alignment = join(assembly_name, "cDNA_alignments", "{sample}.cDNA.bam")
     output:
-        idxstats = join(assembly_name, "cDNA_alignments", "{sample}.idxstats.tsv")
+        idxstats = join(assembly_name, "cDNA_alignments", "{sample}.cDNA.idxstats.tsv")
     threads: 1
     log: join(assembly_name, "logs", "samtools_idxstats_cDNA_{sample}.log")
     benchmark: join(assembly_name, "benchmarks", "samtools_idxstats_cDNA_{sample}.tsv")
@@ -347,7 +346,7 @@ rule idxstats_hisat2:
 
 rule stringtie:
     input:
-        alignment = join(assembly_name, "cDNA_alignments", "{sample}.bam")
+        alignment = join(assembly_name, "cDNA_alignments", "{sample}.cDNA.bam")
     output:
         stringtie_assembly = join(assembly_name, "cDNA_alignments", "{sample}.stringtie.gtf")
     threads: 1
@@ -357,7 +356,7 @@ rule stringtie:
 
 rule jgi_summarize_bam_contig_depths:
     input:
-        alignments = expand(join(assembly_name, "gDNA_alignments", "{sample}.bam"), sample = gDNA_samples)
+        alignments = expand(join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam"), sample = gDNA_samples)
     output:
         depth = join(assembly_name, "gDNA_alignments", "depth.tsv")
     threads: 1
@@ -574,42 +573,79 @@ rule CAT_classify:
 
 busco_database_name = basename(normpath(config["busco_database"]))
 
-if str(config["busco_version"]) == "3":
-    rule busco3:
-        input:
-            filtered_scaffolds = filtered_scaffolds_filename
-        output:
-            busco_done = join(assembly_name, "assembly", "busco.done")
-        params:
-            output_name = "BUSCO3_" + busco_database_name,
-            output_directory = "run_" + "BUSCO3_" + busco_database_name,
-            dest_directory = join(assembly_name),
-            busco_database = config["busco_database"]
-        threads: 6
-        log: join(assembly_name, "logs", "BUSCO3.log")
-        benchmark: join(assembly_name, "benchmarks", "BUSCO3.tsv")
-        shell:
-            """
-            SINGULARITYENV_AUGUSTUS_CONFIG_PATH=/hpc-home/mcgowan/augustus_config singularity exec /hpc-home/mcgowan/software/singularity_testing/busco3.simg run_BUSCO.py -i {input.filtered_scaffolds} -c {threads} -o {params.output_name} -m geno -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
-            mv {params.output_directory} {params.dest_directory}
-            """
-elif str(config["busco_version"]) == "4":
-    rule busco4:
-        input:
-            filtered_scaffolds = filtered_scaffolds_filename
-        output:
-            busco_done = join(assembly_name, "assembly", "busco.done")
-        params:
-            output_name = "BUSCO4_" + busco_database_name,
-            output_directory = join(assembly_name),
-            busco_database = config["busco_database"]
-        threads: 6
-        log: join(assembly_name, "logs", "BUSCO4.log")
-        benchmark: join(assembly_name, "benchmarks", "BUSCO4.tsv")
-        shell:
-            """
-            /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/busco-4.1.2/bin/busco --in {input.filtered_scaffolds} -c {threads} -o {params.output_name} --out_path {params.output_directory} -m geno --offline -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
-            """
+if config["run_busco"] == "true":
+    if str(config["busco_version"]) == "3":
+        rule busco3:
+            input:
+                filtered_scaffolds = filtered_scaffolds_filename
+            output:
+                busco_done = join(assembly_name, "assembly", "busco.done")
+            params:
+                output_name = "BUSCO3_" + busco_database_name,
+                output_directory = "run_" + "BUSCO3_" + busco_database_name,
+                dest_directory = join(assembly_name),
+                busco_database = config["busco_database"]
+            threads: 6
+            log: join(assembly_name, "logs", "BUSCO3.log")
+            benchmark: join(assembly_name, "benchmarks", "BUSCO3.tsv")
+            shell:
+                """
+                SINGULARITYENV_AUGUSTUS_CONFIG_PATH=/hpc-home/mcgowan/augustus_config singularity exec /hpc-home/mcgowan/software/singularity_testing/busco3.simg run_BUSCO.py -i {input.filtered_scaffolds} -c {threads} -o {params.output_name} -m geno -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
+                mv {params.output_directory} {params.dest_directory}
+                """
+    elif str(config["busco_version"]) == "4":
+        rule busco4:
+            input:
+                filtered_scaffolds = filtered_scaffolds_filename
+            output:
+                busco_done = join(assembly_name, "assembly", "busco.done")
+            params:
+                output_name = "BUSCO4_" + busco_database_name,
+                output_directory = join(assembly_name),
+                busco_database = config["busco_database"]
+            threads: 6
+            log: join(assembly_name, "logs", "BUSCO4.log")
+            benchmark: join(assembly_name, "benchmarks", "BUSCO4.tsv")
+            shell:
+                """
+                /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/busco-4.1.2/bin/busco --in {input.filtered_scaffolds} -c {threads} -o {params.output_name} --out_path {params.output_directory} -m geno --offline -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
+                """
+    else:
+        print("Error, BUSCO version not supported or recognised:", str(config["busco_version"]))
+        sys.exit(-1)
+
+# GENERATE SUMMARY FILE
+# For the summary file, show coverage info for each library, and merged libraries if N libraries is > 1
+if len(gDNA_samples) > 1:
+    gDNA_idxstats_files = (expand(join(assembly_name, "gDNA_alignments", "{sample}.gDNA.idxstats.tsv"), sample = gDNA_samples + ["merged"]))
 else:
-    print("Error, BUSCO version not supported or recognised:", str(config["busco_version"]))
-    sys.exit(-1)
+    gDNA_idxstats_files = (expand(join(assembly_name, "gDNA_alignments", "{sample}.gDNA.idxstats.tsv"), sample = gDNA_samples))
+
+gDNA_depth_file = join(assembly_name, "gDNA_alignments", "depth.tsv")
+
+if len(cDNA_samples) == 0:
+    cDNA_idxstats_files = []
+    stringtie_assembly_files = []
+elif len(cDNA_samples) > 1:
+    cDNA_idxstats_files = expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.idxstats.tsv"), sample = cDNA_samples + ["merged"])
+    stringtie_assembly_files = expand(join(assembly_name, "cDNA_alignments", "{sample}.stringtie.gtf"), sample = cDNA_samples + ["merged"])
+else:
+    cDNA_idxstats_files = expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.idxstats.tsv"), sample = cDNA_samples)
+    stringtie_assembly_files = expand(join(assembly_name, "cDNA_alignments", "{sample}.stringtie.gtf"), sample = cDNA_samples)
+
+rule generate_summary:
+    input:
+        infoseq = join(assembly_name, "assembly", "scaffolds." + str(config["min_scaffold_length"]) + ".tsv"),
+        bin_members_parsed = join(assembly_name, "metabat2", "no_coverage", "bin_members.tsv"),
+        tiara_classification = join(assembly_name, "tiara", assembly_name + ".tiara.tsv"),
+        eukrep_classification = join(assembly_name, "eukrep", assembly_name + ".eukrep.tsv"),
+        CAT_classification = join(assembly_name, "CAT", assembly_name + ".CAT.contig2classification.officialnames.txt"),
+        blobtools_classification = join(assembly_name, "blobtools", assembly_name + ".blobDB.bestsum.table.txt"), 
+        gDNA_depth = gDNA_depth_file,
+        gDNA_idxstats = gDNA_idxstats_files,
+        cDNA_idxstats = cDNA_idxstats_files,
+        stringtie_assemblies = stringtie_assembly_files
+    output:
+        summary = join(assembly_name, assembly_name + "_summary.tsv")
+    script:
+        "scripts/generate_summary.py"
