@@ -170,7 +170,7 @@ with open(snakemake.input.gDNA_depth, "r") as f:
 
 # gDNA idxstats per sample
 for idxstats in snakemake.input.gDNA_idxstats:
-    sample_name = os.path.basename(idxstats).rstrip("gDNA.idxstats.tsv")
+    sample_name = os.path.basename(idxstats).split(".gDNA.idxstats.tsv")[0]
     gDNA_samples.append(sample_name)
 
     with open(idxstats, "r") as f:
@@ -185,7 +185,7 @@ for idxstats in snakemake.input.gDNA_idxstats:
 
 # cDNA idxstats per sample
 for idxstats in snakemake.input.cDNA_idxstats:
-    sample_name = os.path.basename(idxstats).rstrip("cDNA.idxstats.tsv")
+    sample_name = os.path.basename(idxstats).split(".cDNA.idxstats.tsv")[0]
     cDNA_samples.append(sample_name)
 
     with open(idxstats, "r") as f:
@@ -200,7 +200,7 @@ for idxstats in snakemake.input.cDNA_idxstats:
 
 # Stringtie transcripts per sample per contig
 for stringtie_assembly in snakemake.input.stringtie_assemblies:
-    sample_name = os.path.basename(stringtie_assembly).rsrtip(".stringtie.gtf")
+    sample_name = os.path.basename(stringtie_assembly).split(".stringtie.gtf")[0]
 
     transcripts_per_contig = {}
     with open(stringtie_assembly, "r") as f:
@@ -218,8 +218,10 @@ for stringtie_assembly in snakemake.input.stringtie_assemblies:
                         transcripts_per_contig[seq_id] = 1
 
         for seq_id in all_contigs:
-            contigs[seq_id]["stringtie_" + sample_name] = transcripts_per_contig[seq_id]
-
+            if seq_id in transcripts_per_contig:
+                contigs[seq_id]["stringtie_" + sample_name] = transcripts_per_contig[seq_id]
+            else:
+                contigs[seq_id]["stringtie_" + sample_name] = 0
 
 header = ["contig", "length", "GC", "bin", "tiara", "eukrep", "cat_superkingdom", "cat_phylum", "cat_class"]
 header += ["cat_order", "cat_family", "cat_genus", "cat_species", "cat_reason", "blobtools_superkingdom"]
@@ -262,11 +264,11 @@ for seq_id in all_contigs:
 
     for sample_name in cDNA_samples:
         line.append(contigs[seq_id]["cDNA_idxstats_" + sample_name])
-        line.appned(contigs[seq_id]["stringtie_transcripts_" + sample_name])
+        line.append(contigs[seq_id]["stringtie_" + sample_name])
 
     for sample_name in gDNA_samples:
         line.append(contigs[seq_id]["gDNA_idxstats_" + sample_name])
 
     line += gDNA_depth[seq_id]
 
-    fo.write("\t".join(line) + "\n")
+    fo.write("\t".join(map(str, line)) + "\n")

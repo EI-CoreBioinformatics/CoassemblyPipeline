@@ -519,8 +519,8 @@ rule megablast:
 rule blobtools:
     input:
         filtered_scaffolds = filtered_scaffolds_filename,
-        merged_bam = join(assembly_name, "gDNA_alignments", "merged.bam"),
-        index = join(assembly_name, "gDNA_alignments", "merged.bam.bai"),
+        merged_bam = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam"),
+        index = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam.bai"),
         diamond_hits = join(assembly_name, "blobtools", assembly_name + ".diamond.out"),
         blastn_hits = join(assembly_name, "blobtools", assembly_name + ".blastn.out")
     output: 
