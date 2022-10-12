@@ -2,13 +2,12 @@
 # Should use absolute paths
 input:
 
-# TODO
 # Optional tools to run
 run_checkm: true
 run_busco: true
 
 # SPAdes parameters
-kmers: "21,33,55"
+kmers: "21,33,55,77"
 min_scaffold_length: 1000 # for bbtools reformat
 
 # BUSCO parameters
