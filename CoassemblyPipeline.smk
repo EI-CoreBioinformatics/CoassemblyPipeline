@@ -84,9 +84,6 @@ cDNA_samples = list(cDNA_libraries)
 
 filtered_scaffolds_filename = join(assembly_name, "assembly", "scaffolds." + str(config["min_scaffold_length"]) + ".fasta")
 
-# TODO allow show tools to be optional (checkm, busco)
-
-
 TARGETS = []
 # final summary
 TARGETS.append(join(assembly_name, assembly_name + "_summary.tsv"))
@@ -94,6 +91,8 @@ TARGETS.append(join(assembly_name, assembly_name + "_summary.tsv"))
 TARGETS.append(join(assembly_name, "quast", "report.txt"))
 #infoseq_summary
 TARGETS.append(join(assembly_name, "assembly", "scaffolds." + str(config["min_scaffold_length"]) + ".tsv"))
+#rRNA genes from barrnap
+TARGETS.append(join(assembly_name, "rrna", assembly_name + ".gDNA.rrna.blast.top.tsv"))
 #gDNA_depth
 TARGETS.append(join(assembly_name, "gDNA_alignments", "depth.tsv"))
 #hisat2_alignments
@@ -112,9 +111,14 @@ TARGETS.append(expand(join(assembly_name, "checkm", "{coverage}", "checkm.done")
 TARGETS.append(join(assembly_name, "blobtools", assembly_name + ".blobDB.bestsum.table.txt"))
 #CAT_summary
 TARGETS.append(join(assembly_name, "CAT", assembly_name + ".CAT.summary.txt"))
+
 #busco_done
-if config["run_busco"] == "true":
+if config["run_busco"] == True:
     TARGETS.append(join(assembly_name, "assembly", "busco.done"))
+
+#checkm_done
+if config["run_checkm"] == True:
+    TARGETS.append(expand(join(assembly_name, "checkm", "{coverage}", "checkm.done"), coverage = ["coverage", "no_coverage"]))
 
 if len(gDNA_samples) > 1:
     #qualimap_comparison_report
@@ -189,7 +193,7 @@ rule spades:
         output_directory = join(assembly_name, "assembly")
     output:
         scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
-    threads: 6
+    threads: 8
     log: join(assembly_name, "logs", "spades.log")
     benchmark: join(assembly_name, "benchmarks", "spades.tsv")
     shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/SPAdes-3.15.5-Linux/bin/spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory}"
@@ -475,7 +479,7 @@ rule barrnap:
     threads: 2
     log: join(assembly_name, "logs", "barrnap.log")
     benchmark: join(assembly_name, "benchmarks", "barrnap.tsv")
-    shell: 'singularity exec /hpc-home/mcgowan/software/singularity_testing/barrnap.img barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.filtered_scaffolds}'
+    shell: 'source barrnap-0.9 && barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.filtered_scaffolds}'
 
 rule pr2_blast:
     input:
@@ -573,7 +577,7 @@ rule CAT_classify:
 
 busco_database_name = basename(normpath(config["busco_database"]))
 
-if config["run_busco"] == "true":
+if config["run_busco"] == True:
     if str(config["busco_version"]) == "3":
         rule busco3:
             input:

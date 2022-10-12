@@ -7,9 +7,15 @@
         "time": "24:00:00",
         "exclude": "t128n84"
     },
+    "create_yaml_file": {
+        "J": "create_yaml_file",
+        "c": "1",
+        "time": "00:30:00",
+        "partition": "ei-short,ei-medium,ei-long"
+    },
     "spades": {
         "J": "spades",
-        "c": "12",
+        "c": "8",
         "memory": "120G",
         "time": "96:00:00"
     },
