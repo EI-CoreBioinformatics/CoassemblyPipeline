@@ -35,4 +35,4 @@ taxonomy_dir: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/C
 diamond_path: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/Diamond_2.0.6/diamond
 
 # pr2 database
-pr2_database: /hpc-home/mcgowan/databases/pr2/4.14.0/pr2_version_4.14.0_SSU_taxo_long.fasta
+pr2_database: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/pr2/4.14.0/pr2_version_4.14.0_SSU_taxo_long.fasta
