@@ -30,7 +30,7 @@ megablast_database: /ei/public/databases/blast/ncbi/nt_20200707/nt
 nodesdb: /hpc-home/mcgowan/DToL_Protists/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/blobtools/nodesdb
 
 # CAT parameters
-cat_database: cat_database: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/2021-01-07_CAT_database
+cat_database: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/2021-01-07_CAT_database
 taxonomy_dir: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/2021-01-07_taxonomy
 diamond_path: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/Diamond_2.0.6/diamond
 
