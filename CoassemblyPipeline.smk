@@ -1,6 +1,6 @@
 # Snakemake pipeline to generate genome coassemblies from G&T-Seq data
 # 
-# Jamie McGowan, 2022
+# Jamie McGowan, 2023
 # <jamie.mcgowan@earlham.ac.uk>
 
 import sys
@@ -107,6 +107,12 @@ TARGETS.append(join(assembly_name, "tiara", assembly_name + ".tiara.tsv"))
 TARGETS.append(join(assembly_name, "eukrep", assembly_name + ".eukrep.tsv"))
 #checkm_done
 TARGETS.append(expand(join(assembly_name, "checkm", "{coverage}", "checkm.done"), coverage = ["coverage", "no_coverage"]))
+#contigs split into chunks
+TARGETS.append(join(assembly_name, "blobtools", "chunks.done"))
+CHUNK_NAMES = []
+for i in range(int(config["n_chunks"])):
+    CHUNK_NAMES.append("chunk." + str(i).zfill(2))
+
 #blobtools_classification
 TARGETS.append(join(assembly_name, "blobtools", assembly_name + ".blobDB.bestsum.table.txt"))
 #CAT_summary
@@ -145,6 +151,14 @@ else:
     TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.cDNA.idxstats.tsv"), sample = cDNA_samples))
     #stringtie_assembie
     TARGETS.append(expand(join(assembly_name, "cDNA_alignments", "{sample}.stringtie.gtf"), sample = cDNA_samples))
+
+if config["cleanup_spades"] == True:
+    TARGETS.append(join(assembly_name, "assembly", "cleanup_spades.done"))
+
+if config["cleanup_cat"] == True:
+    TARGETS.append(join(assembly_name, "CAT", "cleanup_cat.done"))
+
+TARGETS.append(join(assembly_name, "blobtools"))
 
 rule all:
     input: TARGETS
@@ -193,10 +207,22 @@ rule spades:
         output_directory = join(assembly_name, "assembly")
     output:
         scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
-    threads: 8
+    threads: 12
     log: join(assembly_name, "logs", "spades.log")
     benchmark: join(assembly_name, "benchmarks", "spades.tsv")
-    shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/SPAdes-3.15.5-Linux/bin/spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory}"
+    shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/SPAdes-3.15.5-Linux/bin/spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory} > {log} 2>&1"
+
+rule cleanup_spades:
+    input:
+        scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
+    output:
+        cleanup_done = join(assembly_name, "assembly", "cleanup_spades.done")
+    threads: 1
+    params:
+        kmers = join(assembly_name, "assembly", "K*"),
+        corrected = join(assembly_name, "assembly", "corrected"),
+        tmp = join(assembly_name, "assembly", "tmp")
+    shell: "rm -rf {params} && touch {output.cleanup_done}"
 
 rule filter_assembly_length:
     input:
@@ -274,6 +300,8 @@ rule qualimap_bamqc:
     params:
         output_directory = join(assembly_name, "gDNA_alignments", "qualimap", "{sample}")
     threads: 2
+    log: join(assembly_name, "logs", "qualimap_bamqc_{sample}.log")
+    benchmark: join(assembly_name, "benchmarks", "qualimap_bamqc_{sample}.tsv")
     shell: "qualimap bamqc -bam {input.alignment} -outdir {params.output_directory} -outformat PDF:HTML -nt {threads} --java-mem-size=20G"
 
 rule qualimap_multi_bamqc_input:
@@ -285,6 +313,7 @@ rule qualimap_multi_bamqc_input:
         samples = gDNA_samples,
         reports_directories = expand(join(assembly_name, "gDNA_alignments", "qualimap", "{sample}"), sample = gDNA_samples)
     threads: 1
+    benchmark: join(assembly_name, "benchmarks", "qualimap_multi_bamqc.tsv")
     run:
         fo = open(output.qualimap_multi_bamqc_input, "w")
         for sample, report in zip(params.samples, params.reports_directories):
@@ -417,7 +446,7 @@ rule quast_bins:
         output_directory = join(assembly_name, "metabat2", "{coverage}", "quast")
     threads: 2
     log: join(assembly_name, "logs", "quast_bins_{coverage}.log")
-    benchmark: join(assembly_name, "benchmarks", "quast_bins_{coverage}")
+    benchmark: join(assembly_name, "benchmarks", "quast_bins_{coverage}.tsv")
     shell: "quast -t {threads} -o {params.output_directory} {params.bins}  > {log} 2>&1"
 
 rule tiara:
@@ -430,7 +459,7 @@ rule tiara:
         tf = 'all'
     threads: 2
     log: join(assembly_name, "logs", "tiara.log")
-    benchmark: join(assembly_name, "benchmarks", "tiara")
+    benchmark: join(assembly_name, "benchmarks", "tiara.tsv")
     shell: 'source tiara-1.0.1 && tiara -i {input.filtered_scaffolds} -o {output.tiara_classification} -m {params.min_length} --tf {params.tf} -t {threads} -v > {log} 2>&1'
 
 rule eukrep:
@@ -443,7 +472,7 @@ rule eukrep:
         min_length = config["eukrep_min_length"]
     threads: 2
     log: join(assembly_name, "logs", "eukrep.log")
-    benchmark: join(assembly_name, "benchmarks", "eukrep")
+    benchmark: join(assembly_name, "benchmarks", "eukrep,tsv")
     shell: 'source eukrep-0.6.6 && EukRep -i {input.filtered_scaffolds} -o {output.eukrep_eukaryotic} --min {params.min_length} --prokarya {output.eukrep_prokaryotic}'
 
 rule parse_eukrep:
@@ -466,7 +495,7 @@ rule checkm:
         checkm_out = join(assembly_name, "checkm", "{coverage}", "checkm.out")
     threads: 8
     log: join(assembly_name, "logs", "checkm_{coverage}.log")
-    benchmark: join(assembly_name, "benchmarks", "checkm_{coverage}")
+    benchmark: join(assembly_name, "benchmarks", "checkm_{coverage}.tsv")
     shell: 'checkm lineage_wf {params.bins} {params.output_dir} -x fa -t {threads} > {params.checkm_out} && touch {output.checkm_done}'
 
 rule barrnap:
@@ -479,7 +508,7 @@ rule barrnap:
     threads: 2
     log: join(assembly_name, "logs", "barrnap.log")
     benchmark: join(assembly_name, "benchmarks", "barrnap.tsv")
-    shell: 'source barrnap-0.9 && barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.filtered_scaffolds}'
+    shell: 'source barrnap-0.9 && barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.filtered_scaffolds} > {log}'
 
 rule pr2_blast:
     input:
@@ -507,18 +536,65 @@ rule diamond:
     benchmark: join(assembly_name, "benchmarks", "diamond.tsv")
     shell: 'source diamond-2.0.14 && /usr/bin/time -v diamond blastx --query {input.filtered_scaffolds} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --outfmt {params.outfmt} --db {params.db} > {output.hits}'
 
-rule megablast:
+# megablastn searches can take a very long time. splitting file into chunks allows multiple jobs to run in parallel
+# randomly sort seuences in effort to balance jobs (as input fasta sorted by sequence length)
+# note doesn't split sequences
+rule chunk_fasta:
     input:
         filtered_scaffolds = filtered_scaffolds_filename
     output:
-        hits = join(assembly_name, "blobtools", assembly_name + ".blastn.out")
+        chunks_done = join(assembly_name, "blobtools", "chunks.done"),
+        contig_list = join(assembly_name, "blobtools", "contig_list"),
+        contig_list_random = join(assembly_name, "blobtools", "contig_list_random"),
+        fasta_chunks = expand(join(assembly_name, "blobtools", "{chunk}.fasta"), chunk = CHUNK_NAMES)
+    params:
+        n_chunks = config["n_chunks"],
+        chunks_prefix = join(assembly_name, "blobtools", "chunk."),
+        chunks = join(assembly_name, "blobtools", "chunk.*"),
+        blobtools_dir = join(assembly_name, "blobtools")
+    threads: 1
+    shell:
+            """
+            grep '>' {input.filtered_scaffolds} | sed 's/>//' > {output.contig_list}
+            sort -R {output.contig_list} > {output.contig_list_random}
+            split -d -n l/{params.n_chunks} {output.contig_list_random} {params.chunks_prefix}
+            for x in {params.chunks}; do seqtk subseq -l 70 {input.filtered_scaffolds} $x > $x.fasta; done;
+            touch {output.chunks_done}
+            """
+
+# rule megablast:
+#     input:
+#         filtered_scaffolds = filtered_scaffolds_filename
+#     output:
+#         hits = join(assembly_name, "blobtools", assembly_name + ".blastn.out")
+#     params:
+#         db = config["megablast_database"],
+#         outfmt = '6 qseqid staxids bitscore std'
+#     threads: 6
+#     log: join(assembly_name, "logs", "megablast.log")
+#     benchmark: join(assembly_name, "benchmarks", "megablast.tsv")
+#     shell: 'blastn -task megablast -db {params.db} -query {input.filtered_scaffolds} -max_target_seqs 10 -max_hsps 1 -evalue 1e-25 -num_threads {threads} -out {output.hits} -outfmt "{params.outfmt}"'
+
+rule megablast:
+    input:
+        query = join(assembly_name, "blobtools", "{chunk}.fasta")
+    output:
+        hits = join(assembly_name, "blobtools", "{chunk}.blastn.out")
     params:
         db = config["megablast_database"],
         outfmt = '6 qseqid staxids bitscore std'
     threads: 6
-    log: join(assembly_name, "logs", "megablast.log")
-    benchmark: join(assembly_name, "benchmarks", "megablast.tsv")
-    shell: 'blastn -task megablast -db {params.db} -query {input.filtered_scaffolds} -max_target_seqs 10 -max_hsps 1 -evalue 1e-25 -num_threads {threads} -out {output.hits} -outfmt "{params.outfmt}"'
+    log: join(assembly_name, "logs", "megablast.{chunk}.log")
+    benchmark: join(assembly_name, "benchmarks", "megablast.{chunk}.log")
+    shell: 'blastn -task megablast -db {params.db} -query {input.query} -max_target_seqs 10 -max_hsps 1 -evalue 1e-25 -num_threads {threads} -out {output.hits} -outfmt "{params.outfmt}"'
+
+rule collate_megablast:
+    input:
+        chunks_done = join(assembly_name, "blobtools", "chunks.done"),
+        blast_hits = expand(join(assembly_name, "blobtools", "{chunk}.blastn.out"), chunk = CHUNK_NAMES)
+    output:
+        all_hits = join(assembly_name, "blobtools", assembly_name + ".blastn.out")
+    shell: "cat {input.blast_hits} > {output.all_hits}"
 
 rule blobtools:
     input:
@@ -574,6 +650,17 @@ rule CAT_classify:
         mv {params.output_prefix}.contig2classification.txt {params.output_prefix}.ORF2LCA.txt {params.output_prefix}.contig2classification.names.txt {params.output_prefix}.contig2classification.officialnames.txt {params.output_prefix}.ORF2LCA.names.txt {params.output_prefix}.ORF2LCA.officialnames.txt {params.output_directory}
         mv {params.output_prefix}.summary.txt {params.output_prefix}.alignment.diamond {params.output_prefix}.log {params.output_prefix}.predicted_proteins.faa {params.output_prefix}.predicted_proteins.gff {params.output_directory}
         """
+
+rule cleanup_CAT:
+    input:
+        CAT_summary = join(assembly_name, "CAT", assembly_name + ".CAT.summary.txt")
+    output:
+        cleanup_done = join(assembly_name, "CAT", "cleanup_cat.done")
+    params:
+        out_prefix = assembly_name + ".CAT",
+        out_dir = join(assembly_name, "CAT")
+    threads: 1
+    shell: 'rm {params.out_dir}/{params.out_prefix}.alignment.diamond && touch {output.cleanup_done}'
 
 busco_database_name = basename(normpath(config["busco_database"]))
 
