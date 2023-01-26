@@ -163,7 +163,7 @@ TARGETS.append(join(assembly_name, "blobtools"))
 rule all:
     input: TARGETS
 
-# Writes a yaml file for SPAdes to speficy file paths to gDNA libraries
+# Writes a yaml file for SPAdes to specify file paths to gDNA libraries
 rule create_yaml_file:
     output:
         yaml_file = join(assembly_name, "input_dataset.yaml")
