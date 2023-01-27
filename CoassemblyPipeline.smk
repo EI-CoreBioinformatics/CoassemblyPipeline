@@ -158,8 +158,6 @@ if config["cleanup_spades"] == True:
 if config["cleanup_cat"] == True:
     TARGETS.append(join(assembly_name, "CAT", "cleanup_cat.done"))
 
-TARGETS.append(join(assembly_name, "blobtools"))
-
 rule all:
     input: TARGETS
 
