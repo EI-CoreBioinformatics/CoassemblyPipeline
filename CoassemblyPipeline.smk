@@ -263,7 +263,8 @@ rule minimap2:
         r1 = lambda wildcards: gDNA_libraries[wildcards.sample][0],
         r2 = lambda wildcards: gDNA_libraries[wildcards.sample][1],
     output:
-        alignment = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam")
+        alignment = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam"),
+        alignment_index = join(assembly_name, "gDNA_alignments", "{sample}.gDNA.bam.bai"),
     threads: 4
     log: join(assembly_name, "logs", "minimap2_{sample}.log")
     benchmark: join(assembly_name, "benchmarks", "minimap2_{sample}.tsv")
@@ -594,11 +595,18 @@ rule collate_megablast:
         all_hits = join(assembly_name, "blobtools", assembly_name + ".blastn.out")
     shell: "cat {input.blast_hits} > {output.all_hits}"
 
+if len(gDNA_samples) > 1:
+    blobtools_alignment = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam")
+    blobtools_alignment_index = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam.bai")
+else:
+    blobtools_alignment = join(assembly_name, "gDNA_alignments", gDNA_samples[0] + ".gDNA.bam")
+    blobtools_alignment_index = join(assembly_name, "gDNA_alignments", gDNA_samples[0] + ".gDNA.bam.bai")
+
 rule blobtools:
     input:
         filtered_scaffolds = filtered_scaffolds_filename,
-        merged_bam = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam"),
-        index = join(assembly_name, "gDNA_alignments", "merged.gDNA.bam.bai"),
+        alignment = blobtools_alignment,
+        index = blobtools_alignment_index,
         diamond_hits = join(assembly_name, "blobtools", assembly_name + ".diamond.out"),
         blastn_hits = join(assembly_name, "blobtools", assembly_name + ".blastn.out")
     output: 
@@ -613,7 +621,7 @@ rule blobtools:
     benchmark: join(assembly_name, "benchmarks", "blobtools.tsv")
     shell:
         """
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools create -i {input.filtered_scaffolds} -b {input.merged_bam} -t {input.diamond_hits} -t {input.blastn_hits} -o {params.prefix} --db {params.nodesdb} > {log} 2>&1
+        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools create -i {input.filtered_scaffolds} -b {input.alignment} -t {input.diamond_hits} -t {input.blastn_hits} -o {params.prefix} --db {params.nodesdb} > {log} 2>&1
         singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools view -i {output.blobdb} -o {params.prefix_directory} -r all >> {log} 2>&1
         singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r superkingdom >> {log} 2>&1
         singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r phylum >> {log} 2>&1
