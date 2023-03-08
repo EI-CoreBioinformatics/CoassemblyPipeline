@@ -16,8 +16,7 @@ The input to this pipeline is a comma separated file. The first line specifies t
 **Sample names should not contain periods**
 
 
-Example:
-`input.csv`
+Example input file: `input.csv`
 
 ```
 COASSEMBLY_NAME
@@ -30,12 +29,8 @@ Sample4,cDNA,Sample4_cDNA_R1.fq.gz,Sample4_cDNA_R2.fq.gz
 
 ```
 
-Real example:
+Example command to launch snakemake:
 
 ```
-Diatom_Coassembly
-S0002,gDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0002_OX5002404_A69456/trimmed_reads/S0002_OX5002404_A69456_gDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0002_OX5002404_A69456/trimmed_reads/S0002_OX5002404_A69456_gDNA_R2.trimmed.fastq.gz
-S0041,gDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0041_OX5002443_A69495/trimmed_reads/S0041_OX5002443_A69495_gDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0041_OX5002443_A69495/trimmed_reads/S0041_OX5002443_A69495_gDNA_R2.trimmed.fastq.gz
-S0042,cDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0042_OX5002444_A69496/trimmed_reads/S0042_OX5002444_A69496_cDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0042_OX5002444_A69496/trimmed_reads/S0042_OX5002444_A69496_cDNA_R2.trimmed.fastq.gz
-S0044,gDNA,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0044_OX5002446_A69498/trimmed_reads/S0044_OX5002446_A69498_gDNA_R1.trimmed.fastq.gz,/ei/.project-scratch/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/CB-GENANNO-476_DToL_Protists/Analysis/GENANNO-536_PL0325_deep_seq/S0044_OX5002446_A69498/trimmed_reads/S0044_OX5002446_A69498_gDNA_R2.trimmed.fastq.gz
+snakemake -p --config input=input.csv -j 20 --retries 1 --latency-wait 60 --snakefile CoassemblyPipeline.smk --cluster-config cluster.json --cluster "sbatch -p {cluster.partition} -c {cluster.c} --mem={cluster.memory} --job-name={cluster.J} --time={cluster.time} --exclude={cluster.exclude} --constraint=intel -o slurm_logs/slurm.{cluster.J}.%j.out"
 ```
