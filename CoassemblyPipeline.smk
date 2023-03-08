@@ -499,7 +499,7 @@ rule checkm:
 
 rule barrnap:
     input:
-        filtered_scaffolds = filtered_scaffolds_filename
+        scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
     output:
         rrna = join(assembly_name, "rrna", assembly_name + ".gDNA.rrna.fasta")
     params:
@@ -507,7 +507,7 @@ rule barrnap:
     threads: 2
     log: join(assembly_name, "logs", "barrnap.log")
     benchmark: join(assembly_name, "benchmarks", "barrnap.tsv")
-    shell: 'source barrnap-0.9 && barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.filtered_scaffolds} > {log}'
+    shell: 'source barrnap-0.9 && barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.scaffolds} > {log}'
 
 rule pr2_blast:
     input:
