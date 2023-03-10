@@ -1,6 +1,6 @@
 ## CoassemblyPipeline
 
-Snakemake pipeline to generate and QC genome coassemblies from G&T-Seq
+Snakemake pipeline to generate and QC genome (co)assemblies from (G&T-Seq).
 
 
 **THIS PIPELINE DOES NOT TRIM READS. IT EXPECTS THE INPUT READS TO HAVE ALREADY BEEN ADAPTER TRIMMED**
@@ -34,3 +34,21 @@ Example command to launch snakemake:
 ```
 snakemake -p --config input=input.csv -j 20 --retries 1 --latency-wait 60 --snakefile CoassemblyPipeline.smk --cluster-config cluster.json --cluster "sbatch -p {cluster.partition} -c {cluster.c} --mem={cluster.memory} --job-name={cluster.J} --time={cluster.time} --exclude={cluster.exclude} --constraint=intel -o slurm_logs/slurm.{cluster.J}.%j.out"
 ```
+
+---
+
+This pipeline runs:
+
+- genome assembly using [SPAdes](https://github.com/ablab/spades)
+- annotation of rRNA genes using [barrnap](https://github.com/tseemann/barrnap), followed by classification based on comparison with the [pr2](https://github.com/pr2database/pr2database) database
+- taxonomic classification using:
+	- [Blobtools](https://github.com/DRL/blobtools)
+	- [CAT](https://github.com/dutilh/CAT)
+	- [EukRep](https://github.com/patrickwest/EukRep)
+	- [Tiara](https://github.com/ibe-uw/tiara/)
+- assembly stats using [QUAST](https://github.com/ablab/quast)
+- coverage stats based on mapping reads with [minimap2](https://github.com/lh3/minimap2) and [QualiMap](http://qualimap.conesalab.org/)
+- contig binning using [MetaBAT2](https://bitbucket.org/berkeleylab/metabat)
+- [BUSCO](https://gitlab.com/ezlab/busco)
+- [CheckM](https://github.com/Ecogenomics/CheckM)
+- Optionally, aligns RNA-Seq reads using [hisat2](https://github.com/DaehwanKimLab/hisat2) and assembles transcripts using [StringTie2](https://github.com/gpertea/stringtie)
