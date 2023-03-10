@@ -29,6 +29,54 @@ Sample4,cDNA,Sample4_cDNA_R1.fq.gz,Sample4_cDNA_R2.fq.gz
 
 ```
 
+Example config file: `config.yaml`
+
+```
+# File listing input reads, better setting this at command line with "--config input=XXX.csv"
+# Should use absolute paths
+input:
+
+# Optional tools to run
+run_checkm: true
+run_busco: true
+
+# SPAdes parameters
+kmers: "21,33,55,77"
+min_scaffold_length: 1000 # for bbtools reformat
+
+# BUSCO parameters
+busco_version: 3
+busco_database: XXXXX
+augustus_species:
+
+# MetaBat2 parameters
+metabat2_min_contig: 1500
+
+# Tiara parameters
+tiara_min_length: 1000
+
+# EukRep parameters
+eukrep_min_length: 1000
+
+# Blobtools parameters
+diamond_database: XXXXX
+megablast_database: XXXXX
+nodesdb: XXXXX
+n_chunks: 4 # chunk the fasta file into N splits for the megablastn search; randomly to balance as input fasta will be sorted by sequence length
+
+# CAT parameters
+cat_database: XXXXX
+taxonomy_dir: XXXXX
+diamond_path: XXXXX
+
+# pr2 database
+pr2_database: XXXXX
+
+# cleanup options
+cleanup_spades: true
+cleanup_cat: true
+```
+
 Example command to launch snakemake:
 
 ```
