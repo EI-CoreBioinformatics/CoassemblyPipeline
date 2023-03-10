@@ -32,7 +32,7 @@ Sample4,cDNA,Sample4_cDNA_R1.fq.gz,Sample4_cDNA_R2.fq.gz
 Example command to launch snakemake:
 
 ```
-snakemake -p --config input=input.csv -j 20 --retries 1 --latency-wait 60 --snakefile CoassemblyPipeline.smk --cluster-config cluster.json --cluster "sbatch -p {cluster.partition} -c {cluster.c} --mem={cluster.memory} --job-name={cluster.J} --time={cluster.time} --exclude={cluster.exclude} --constraint=intel -o slurm_logs/slurm.{cluster.J}.%j.out"
+snakemake -p --config input=input.csv -j 20 --retries 1 --latency-wait 60 --snakefile CoassemblyPipeline.smk --cluster-config cluster.json --cluster "sbatch -p {cluster.partition} -c {cluster.c} --mem={cluster.memory} --job-name={cluster.J} --time={cluster.time} --exclude={cluster.exclude} -o slurm_logs/slurm.{cluster.J}.%j.out"
 ```
 
 ---
