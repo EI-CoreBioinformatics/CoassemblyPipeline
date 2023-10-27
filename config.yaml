@@ -28,7 +28,7 @@ eukrep_min_length: 1000
 diamond_database: /hpc-home/mcgowan/DToL_Protists/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/diamond/reference_proteomes.dmnd
 megablast_database: /ei/public/databases/blast/ncbi/nt_20220819/nt
 nodesdb: /hpc-home/mcgowan/DToL_Protists/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/blobtools/nodesdb
-n_chunks: 6 # chunk the fasta file into N splits for the megablastn search; randomly to balance as input fasta will be sorted by sequence length
+n_chunks: 4 # chunk the fasta file into N splits for the megablastn search; randomly to balance as input fasta will be sorted by sequence length
 
 # CAT parameters
 cat_database: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/2021-01-07_CAT_database

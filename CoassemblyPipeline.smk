@@ -208,7 +208,7 @@ rule spades:
     threads: 12
     log: join(assembly_name, "logs", "spades.log")
     benchmark: join(assembly_name, "benchmarks", "spades.tsv")
-    shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/SPAdes-3.15.5-Linux/bin/spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory} > {log} 2>&1"
+    shell: "spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory} > {log} 2>&1"
 
 rule cleanup_spades:
     input:
@@ -394,7 +394,7 @@ rule jgi_summarize_bam_contig_depths:
     threads: 1
     log: join(assembly_name, "logs", "jgi_summarize_bam_contig_depths.log")
     benchmark: join(assembly_name, "benchmarks", "jgi_summarize_bam_contig_depths.tsv")
-    shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/metabat2-2.15/bin/jgi_summarize_bam_contig_depths --outputDepth {output.depth} {input.alignments}"
+    shell: "jgi_summarize_bam_contig_depths --outputDepth {output.depth} {input.alignments}"
 
 # Run metabat2 without coverage information (i.e. tetra-nucleotide frequencies only)
 rule metabat2:
@@ -408,7 +408,7 @@ rule metabat2:
     threads: 2
     log: join(assembly_name, "logs", "metabat2_no_coverage.log")
     benchmark: join(assembly_name, "benchmarks", "metabat2_no_coverage.tsv")
-    shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/metabat2-2.15/bin/metabat2 -i {input.filtered_scaffolds} -o {params.metabat2_output} -m {params.min_contig} --numThreads {threads} --saveCls --unbinned"
+    shell: "metabat2 -i {input.filtered_scaffolds} -o {params.metabat2_output} -m {params.min_contig} --numThreads {threads} --saveCls --unbinned"
 
 # Run metabat2 with coverage information
 rule metabat2_coverage:
@@ -423,7 +423,7 @@ rule metabat2_coverage:
     threads: 2
     log: join(assembly_name, "logs", "metabat2_coverage.log")
     benchmark: join(assembly_name, "benchmarks", "metabat2_coverage.tsv")
-    shell: "/ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/metabat2-2.15/bin/metabat2 -a {input.depth} -i {input.filtered_scaffolds} -o {params.metabat2_output} -m {params.min_contig} --numThreads {threads} --saveCls --unbinned"
+    shell: "metabat2 -a {input.depth} -i {input.filtered_scaffolds} -o {params.metabat2_output} -m {params.min_contig} --numThreads {threads} --saveCls --unbinned"
 
 rule parse_metabat2:
     input: 
@@ -459,7 +459,7 @@ rule tiara:
     threads: 2
     log: join(assembly_name, "logs", "tiara.log")
     benchmark: join(assembly_name, "benchmarks", "tiara.tsv")
-    shell: 'source tiara-1.0.1 && tiara -i {input.filtered_scaffolds} -o {output.tiara_classification} -m {params.min_length} --tf {params.tf} -t {threads} -v > {log} 2>&1'
+    shell: 'tiara -i {input.filtered_scaffolds} -o {output.tiara_classification} -m {params.min_length} --tf {params.tf} -t {threads} -v > {log} 2>&1'
 
 rule eukrep:
     input:
@@ -472,7 +472,7 @@ rule eukrep:
     threads: 2
     log: join(assembly_name, "logs", "eukrep.log")
     benchmark: join(assembly_name, "benchmarks", "eukrep,tsv")
-    shell: 'source eukrep-0.6.6 && EukRep -i {input.filtered_scaffolds} -o {output.eukrep_eukaryotic} --min {params.min_length} --prokarya {output.eukrep_prokaryotic}'
+    shell: 'EukRep -i {input.filtered_scaffolds} -o {output.eukrep_eukaryotic} --min {params.min_length} --prokarya {output.eukrep_prokaryotic}'
 
 rule parse_eukrep:
     input:
@@ -507,7 +507,7 @@ rule barrnap:
     threads: 2
     log: join(assembly_name, "logs", "barrnap.log")
     benchmark: join(assembly_name, "benchmarks", "barrnap.tsv")
-    shell: 'source barrnap-0.9 && barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.scaffolds} > {log}'
+    shell: 'barrnap --threads {threads} --kingdom {params.kingdom} --outseq {output.rrna} {input.scaffolds} > {log}'
 
 rule pr2_blast:
     input:
@@ -533,7 +533,7 @@ rule diamond:
     threads: 16
     log: join(assembly_name, "logs", "diamond.log")
     benchmark: join(assembly_name, "benchmarks", "diamond.tsv")
-    shell: 'source diamond-2.0.14 && /usr/bin/time -v diamond blastx --query {input.filtered_scaffolds} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --outfmt {params.outfmt} --db {params.db} > {output.hits}'
+    shell: 'diamond blastx --query {input.filtered_scaffolds} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --outfmt {params.outfmt} --db {params.db} > {output.hits}'
 
 # megablastn searches can take a very long time. splitting file into chunks allows multiple jobs to run in parallel
 # randomly sort seuences in effort to balance jobs (as input fasta sorted by sequence length)
@@ -621,13 +621,13 @@ rule blobtools:
     benchmark: join(assembly_name, "benchmarks", "blobtools.tsv")
     shell:
         """
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools create -i {input.filtered_scaffolds} -b {input.alignment} -t {input.diamond_hits} -t {input.blastn_hits} -o {params.prefix} --db {params.nodesdb} > {log} 2>&1
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools view -i {output.blobdb} -o {params.prefix_directory} -r all >> {log} 2>&1
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r superkingdom >> {log} 2>&1
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r phylum >> {log} 2>&1
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r order >> {log} 2>&1
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r family >> {log} 2>&1
-        singularity exec /hpc-home/mcgowan/software/singularity_testing/blobtools.img blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r genus >> {log} 2>&1
+        blobtools create -i {input.filtered_scaffolds} -b {input.alignment} -t {input.diamond_hits} -t {input.blastn_hits} -o {params.prefix} --db {params.nodesdb} > {log} 2>&1
+        blobtools view -i {output.blobdb} -o {params.prefix_directory} -r all >> {log} 2>&1
+        blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r superkingdom >> {log} 2>&1
+        blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r phylum >> {log} 2>&1
+        blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r order >> {log} 2>&1
+        blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r family >> {log} 2>&1
+        blobtools plot -i {output.blobdb} -o {params.prefix_directory} -r genus >> {log} 2>&1
         """
 
 rule CAT_classify:
@@ -647,12 +647,12 @@ rule CAT_classify:
     benchmark: join(assembly_name, "benchmarks", "CAT.tsv")
     shell: 
         """
-        singularity exec /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/CAT-5.2/CAT.img CAT contigs -o {params.output_prefix} -c {input.filtered_scaffolds} -d {params.CAT_database} -t {params.taxonomy_dir} -n {threads} --path_to_diamond {params.diamond_path} --I_know_what_Im_doing --top 25
-        singularity exec /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/CAT-5.2/CAT.img CAT add_names -i {params.output_prefix}.contig2classification.txt -o {params.output_prefix}.contig2classification.names.txt -t {params.taxonomy_dir}
-        singularity exec /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/CAT-5.2/CAT.img CAT add_names -i {params.output_prefix}.contig2classification.txt -o {params.output_prefix}.contig2classification.officialnames.txt -t {params.taxonomy_dir} --only_official
-        singularity exec /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/CAT-5.2/CAT.img CAT add_names -i {params.output_prefix}.ORF2LCA.txt -o {params.output_prefix}.ORF2LCA.names.txt -t {params.taxonomy_dir}
-        singularity exec /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/CAT-5.2/CAT.img CAT add_names -i {params.output_prefix}.ORF2LCA.txt -o {params.output_prefix}.ORF2LCA.officialnames.txt -t {params.taxonomy_dir} --only_official
-        singularity exec /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/CAT-5.2/CAT.img CAT summarise -i {params.output_prefix}.contig2classification.officialnames.txt -o {params.output_prefix}.summary.txt -c {input.filtered_scaffolds}
+        CAT contigs -o {params.output_prefix} -c {input.filtered_scaffolds} -d {params.CAT_database} -t {params.taxonomy_dir} -n {threads} --path_to_diamond {params.diamond_path} --I_know_what_Im_doing --top 25
+        CAT add_names -i {params.output_prefix}.contig2classification.txt -o {params.output_prefix}.contig2classification.names.txt -t {params.taxonomy_dir}
+        CAT add_names -i {params.output_prefix}.contig2classification.txt -o {params.output_prefix}.contig2classification.officialnames.txt -t {params.taxonomy_dir} --only_official
+        CAT add_names -i {params.output_prefix}.ORF2LCA.txt -o {params.output_prefix}.ORF2LCA.names.txt -t {params.taxonomy_dir}
+        CAT add_names -i {params.output_prefix}.ORF2LCA.txt -o {params.output_prefix}.ORF2LCA.officialnames.txt -t {params.taxonomy_dir} --only_official
+        CAT summarise -i {params.output_prefix}.contig2classification.officialnames.txt -o {params.output_prefix}.summary.txt -c {input.filtered_scaffolds}
         mv {params.output_prefix}.contig2classification.txt {params.output_prefix}.ORF2LCA.txt {params.output_prefix}.contig2classification.names.txt {params.output_prefix}.contig2classification.officialnames.txt {params.output_prefix}.ORF2LCA.names.txt {params.output_prefix}.ORF2LCA.officialnames.txt {params.output_directory}
         mv {params.output_prefix}.summary.txt {params.output_prefix}.alignment.diamond {params.output_prefix}.log {params.output_prefix}.predicted_proteins.faa {params.output_prefix}.predicted_proteins.gff {params.output_directory}
         """
@@ -687,7 +687,7 @@ if config["run_busco"] == True:
             benchmark: join(assembly_name, "benchmarks", "BUSCO3.tsv")
             shell:
                 """
-                SINGULARITYENV_AUGUSTUS_CONFIG_PATH=/hpc-home/mcgowan/augustus_config singularity exec /hpc-home/mcgowan/software/singularity_testing/busco3.simg run_BUSCO.py -i {input.filtered_scaffolds} -c {threads} -o {params.output_name} -m geno -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
+                run_BUSCO.py -i {input.filtered_scaffolds} -c {threads} -o {params.output_name} -m geno -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
                 mv {params.output_directory} {params.dest_directory}
                 """
     elif str(config["busco_version"]) == "4":
@@ -705,7 +705,7 @@ if config["run_busco"] == True:
             benchmark: join(assembly_name, "benchmarks", "BUSCO4.tsv")
             shell:
                 """
-                /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Software/busco-4.1.2/bin/busco --in {input.filtered_scaffolds} -c {threads} -o {params.output_name} --out_path {params.output_directory} -m geno --offline -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
+                busco --in {input.filtered_scaffolds} -c {threads} -o {params.output_name} --out_path {params.output_directory} -m geno --offline -l {params.busco_database} > {log} 2>&1 && touch {output.busco_done}
                 """
     else:
         print("Error, BUSCO version not supported or recognised:", str(config["busco_version"]))

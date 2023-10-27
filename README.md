@@ -1,6 +1,6 @@
 ## CoassemblyPipeline
 
-Snakemake pipeline to generate and QC genome (co)assemblies from (G&T-Seq).
+Snakemake pipeline to generate and QC genome (co)assemblies (from G&T-Seq).
 
 
 **THIS PIPELINE DOES NOT TRIM READS. IT EXPECTS THE INPUT READS TO HAVE ALREADY BEEN ADAPTER TRIMMED**
@@ -47,7 +47,6 @@ min_scaffold_length: 1000 # for bbtools reformat
 # BUSCO parameters
 busco_version: 3
 busco_database: XXXXX
-augustus_species:
 
 # MetaBat2 parameters
 metabat2_min_contig: 1500
@@ -100,3 +99,36 @@ This pipeline runs:
 - [BUSCO](https://gitlab.com/ezlab/busco)
 - [CheckM](https://github.com/Ecogenomics/CheckM)
 - Optionally, aligns RNA-Seq reads using [hisat2](https://github.com/DaehwanKimLab/hisat2) and assembles transcripts using [StringTie2](https://github.com/gpertea/stringtie)
+
+---
+
+The Singularity definition file `Singularity.def` contains some of the required software:
+
+- spades
+- bbmap
+- quast
+- emboss
+- minimap2
+- samtools
+- qualimap
+- hisat2
+- stringtie
+- metabat2
+- barrnap
+- diamond
+- blast
+- checkm-genome
+- cat
+
+Additional software requirements not included in the definition file (due to compatbility issues):
+
+- [blobtools (v1.1.1)](https://github.com/DRL/blobtools)
+- [busco (v3/4/5)](https://gitlab.com/ezlab/busco)
+- [EukRep](https://github.com/patrickwest/EukRep)
+- [Tiara](https://github.com/ibe-uw/tiara)
+
+---
+
+**Example DAG**
+
+![Example Snakemake DAG](example_DAG.png)

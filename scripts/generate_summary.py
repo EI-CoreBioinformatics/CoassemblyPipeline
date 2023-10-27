@@ -223,7 +223,7 @@ for stringtie_assembly in snakemake.input.stringtie_assemblies:
             else:
                 contigs[seq_id]["stringtie_" + sample_name] = 0
 
-header = ["contig", "length", "GC", "bin", "tiara", "eukrep", "cat_superkingdom", "cat_phylum", "cat_class"]
+header = ["sequence_id", "length", "GC", "bin", "tiara", "eukrep", "cat_superkingdom", "cat_phylum", "cat_class"]
 header += ["cat_order", "cat_family", "cat_genus", "cat_species", "cat_reason", "blobtools_superkingdom"]
 header += ["blobtools_phylum", "blobtools_order", "blobtools_family", "blobtools_genus", "blobtools_species"]
 
