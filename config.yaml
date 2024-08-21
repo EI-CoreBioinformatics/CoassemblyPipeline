@@ -2,6 +2,9 @@
 # Should use absolute paths
 input:
 
+# Mode to run SPAdes in - "sc" for single-cell or "meta" for metagenome
+assembly_type: sc
+
 # Optional tools to run
 run_checkm: true
 run_busco: true
@@ -12,7 +15,7 @@ min_scaffold_length: 1000 # for bbtools reformat
 
 # BUSCO parameters
 busco_version: 3
-busco_database: /hpc-home/mcgowan/databases/busco3_datasets/eukaryota_odb9/
+busco_database: ....../databases/busco3_datasets/eukaryota_odb9/
 augustus_species:
 
 # MetaBat2 parameters
@@ -25,18 +28,17 @@ tiara_min_length: 1000
 eukrep_min_length: 1000
 
 # Blobtools parameters
-diamond_database: /hpc-home/mcgowan/DToL_Protists/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/diamond/reference_proteomes.dmnd
-megablast_database: /ei/public/databases/blast/ncbi/nt_20220819/nt
-nodesdb: /hpc-home/mcgowan/DToL_Protists/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/blobtools/nodesdb
-n_chunks: 4 # chunk the fasta file into N splits for the megablastn search; randomly to balance as input fasta will be sorted by sequence length
+diamond_database: ....../databases/diamond/reference_proteomes.dmnd
+megablast_database: ....../databases/ncbi/nt_20220819/nt
+nodesdb: ....../databases/blobtools/nodesdb
+n_chunks: 6 # chunk the fasta file into N splits for the megablastn search; randomly to balance as input fasta will be sorted by sequence length
 
 # CAT parameters
-cat_database: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/2021-01-07_CAT_database
-taxonomy_dir: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/2021-01-07_taxonomy
-diamond_path: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/CAT/CAT_prepare_20210107/Diamond_2.0.6/diamond
+cat_database: ....../databases/CAT/20231120_CAT_nr/db
+taxonomy_dir: ....../databases/CAT/20231120_CAT_nr/tax
 
 # pr2 database
-pr2_database: /ei/projects/e/e5f1ee13-d3bf-4fec-8be8-38c6ad26aac3/data/results/CB-GENANNO-476_DToL_Protists/Reference/databases/pr2/4.14.0/pr2_version_4.14.0_SSU_taxo_long.fasta
+pr2_database: ....../databases/pr2/4.14.0/pr2_version_4.14.0_SSU_taxo_long.fasta
 
 # cleanup options
 cleanup_spades: true # deletes: corrected; K[0-9][0-9]; misc; tmp;

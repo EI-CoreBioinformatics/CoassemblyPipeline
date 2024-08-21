@@ -1,4 +1,4 @@
-Bootstrap: docker                                                                                                                                                                    
+	Bootstrap: docker                                                                                                                                                                    
 From: ubuntu:latest                                                                                                                                                                  
                                                                                                                                                                                      
 %environment
@@ -18,4 +18,5 @@ From: ubuntu:latest
     /opt/software/conda/bin/conda config --add channels bioconda
     /opt/software/conda/bin/conda config --add channels conda-forge
 
-    /opt/software/conda/bin/conda create -p /opt/software/conda-env -y  spades bbmap quast emboss minimap2 samtools qualimap hisat2 stringtie metabat2 barrnap diamond blast checkm-genome cat
+    /opt/software/conda/bin/conda create -p /opt/software/conda-env -y  spades bbmap quast emboss minimap2 samtools qualimap hisat2 stringtie metabat2 barrnap diamond blast checkm-genome cat busco=5.7 
+    /opt/software/conda/bin/conda clean --all --yes

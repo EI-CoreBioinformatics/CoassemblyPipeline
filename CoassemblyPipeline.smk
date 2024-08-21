@@ -158,6 +158,9 @@ if config["cleanup_spades"] == True:
 if config["cleanup_cat"] == True:
     TARGETS.append(join(assembly_name, "CAT", "cleanup_cat.done"))
 
+
+localrules: create_yaml_file
+
 rule all:
     input: TARGETS
 
@@ -196,19 +199,40 @@ rule create_yaml_file:
             fo.write('   }\n')
             fo.write(']\n')
 
-rule spades:
-    input:
-        yaml_file = join(assembly_name, "input_dataset.yaml")
-    params:
-        kmers = config["kmers"],
-        assembly_name = assembly_name,
-        output_directory = join(assembly_name, "assembly")
-    output:
-        scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
-    threads: 12
-    log: join(assembly_name, "logs", "spades.log")
-    benchmark: join(assembly_name, "benchmarks", "spades.tsv")
-    shell: "spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory} > {log} 2>&1"
+assembly_type = config["assembly_type"]
+
+if "sc" in assembly_type or "single-cell" in assembly_type or "singlecell" in assembly_type or "single_cell" in assembly_type:
+    rule spades:
+        input:
+            yaml_file = join(assembly_name, "input_dataset.yaml")
+        params:
+            kmers = config["kmers"],
+            assembly_name = assembly_name,
+            output_directory = join(assembly_name, "assembly")
+        output:
+            scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
+        threads: 16
+        log: join(assembly_name, "logs", "spades.log")
+        benchmark: join(assembly_name, "benchmarks", "spades.tsv")
+        shell: "spades.py --dataset {input.yaml_file} --sc -k {params.kmers} --threads {threads} -o {params.output_directory} > {log} 2>&1"
+elif "meta" in assembly_type:
+    rule spades:
+        input:
+            yaml_file = join(assembly_name, "input_dataset.yaml")
+        params:
+            kmers = config["kmers"],
+            assembly_name = assembly_name,
+            output_directory = join(assembly_name, "assembly")
+        output:
+            scaffolds = join(assembly_name, "assembly", "scaffolds.fasta")
+        threads: 16
+        log: join(assembly_name, "logs", "spades.log")
+        benchmark: join(assembly_name, "benchmarks", "spades.tsv")
+        shell: "spades.py --dataset {input.yaml_file} --meta -k {params.kmers} --threads {threads} -o {params.output_directory} > {log} 2>&1"
+else:
+    print(f"Did not understand 'assembly_type' parameter '{assembly_type}' in config file, valid parameters are `sc` or `meta`")
+    sys.exit()
+
 
 rule cleanup_spades:
     input:
@@ -255,7 +279,7 @@ rule infoseq:
     threads: 1
     log: join(assembly_name, "logs", "infoseq.log")
     benchmark: join(assembly_name, "benchmarks", "infoseq.tsv")
-    shell: "infoseq -sequence {input.filtered_scaffolds} -auto -nocolumns -delimiter '\t' -only -name -length -pgc -outfile {output.infoseq_summary}"
+    shell: "infoseq -sequence {input.filtered_scaffolds} -auto -nocolumns -delimiter '\\t' -only -name -length -pgc -outfile {output.infoseq_summary}"
 
 rule minimap2:
     input:
@@ -533,7 +557,7 @@ rule diamond:
     threads: 16
     log: join(assembly_name, "logs", "diamond.log")
     benchmark: join(assembly_name, "benchmarks", "diamond.tsv")
-    shell: 'diamond blastx --query {input.filtered_scaffolds} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --outfmt {params.outfmt} --db {params.db} > {output.hits}'
+    shell: '/usr/bin/time -v diamond blastx --query {input.filtered_scaffolds} --sensitive --max-target-seqs 1 --evalue 1e-25 --threads {threads} --outfmt {params.outfmt} --db {params.db} > {output.hits}'
 
 # megablastn searches can take a very long time. splitting file into chunks allows multiple jobs to run in parallel
 # randomly sort seuences in effort to balance jobs (as input fasta sorted by sequence length)
@@ -640,14 +664,13 @@ rule CAT_classify:
         output_prefix = assembly_name + ".CAT",
         output_directory = join(assembly_name, "CAT"),
         CAT_database = config["cat_database"],
-        taxonomy_dir = config["taxonomy_dir"],
-        diamond_path = config["diamond_path"]
+        taxonomy_dir = config["taxonomy_dir"]
     threads: 8
     log: join(assembly_name, "logs", "CAT.log")
     benchmark: join(assembly_name, "benchmarks", "CAT.tsv")
     shell: 
         """
-        CAT contigs -o {params.output_prefix} -c {input.filtered_scaffolds} -d {params.CAT_database} -t {params.taxonomy_dir} -n {threads} --path_to_diamond {params.diamond_path} --I_know_what_Im_doing --top 25
+        CAT contigs -o {params.output_prefix} -c {input.filtered_scaffolds} -d {params.CAT_database} -t {params.taxonomy_dir} -n {threads} --I_know_what_Im_doing --top 25
         CAT add_names -i {params.output_prefix}.contig2classification.txt -o {params.output_prefix}.contig2classification.names.txt -t {params.taxonomy_dir}
         CAT add_names -i {params.output_prefix}.contig2classification.txt -o {params.output_prefix}.contig2classification.officialnames.txt -t {params.taxonomy_dir} --only_official
         CAT add_names -i {params.output_prefix}.ORF2LCA.txt -o {params.output_prefix}.ORF2LCA.names.txt -t {params.taxonomy_dir}

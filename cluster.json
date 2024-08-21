@@ -4,20 +4,13 @@
         "memory": "8000",
         "c": "4",
         "J": "coassembly",
-        "time": "24:00:00",
-        "exclude": "t128n84,t128n99"
-    },
-    "create_yaml_file": {
-        "J": "create_yaml_file",
-        "c": "1",
-        "time": "00:30:00",
-        "partition": "ei-short,ei-medium,ei-long"
+        "time": "24:00:00"
     },
     "spades": {
         "J": "spades",
-        "c": "12",
-        "memory": "240G",
-        "time": "96:00:00"
+        "c": "16",
+        "memory": "120G",
+        "time": "144:00:00"
     },
     "filter_assembly_length": {
         "J": "reformat",
@@ -118,8 +111,8 @@
     "megablast": {
         "J": "megablast",
         "c": "6",
-        "memory": "249G",
-        "time": "48:00:00"
+        "memory": "100G",
+        "time": "96:00:00"
     },
     "blobtools": {
         "J": "blobtools",
@@ -148,7 +141,7 @@
         "c": "1"
     },
     "idxstats_hisat2": {
-        "J": "idxstats",    
+        "J": "idxstats",
         "c": "1"
     },
     "jgi_summarize_bam_contig_depths": {
