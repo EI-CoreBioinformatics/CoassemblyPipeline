@@ -1,6 +1,6 @@
 ## CoassemblyPipeline
 
-Snakemake pipeline to generate and QC genome (co)assemblies (from G&T-Seq).
+Snakemake pipeline to generate and QC genome (co)assemblies from single-cell (e.g., G&T-Seq) or metagenome data.
 
 
 **THIS PIPELINE DOES NOT TRIM READS. IT EXPECTS THE INPUT READS TO HAVE ALREADY BEEN ADAPTER TRIMMED**
@@ -32,9 +32,12 @@ Sample4,cDNA,Sample4_cDNA_R1.fq.gz,Sample4_cDNA_R2.fq.gz
 Example config file: `config.yaml`
 
 ```
-# File listing input reads, better setting this at command line with "--config input=XXX.csv"
+# File listing input reads, better to set this at command line with "--config input=XXX.csv"
 # Should use absolute paths
 input:
+
+# Mode to run SPAdes in - "sc" for single-cell or "meta" for metagenome
+assembly_type: [sc / meta]
 
 # Optional tools to run
 run_checkm: true
@@ -86,7 +89,7 @@ snakemake -p --config input=input.csv -j 20 --retries 1 --latency-wait 60 --snak
 
 This pipeline runs:
 
-- genome assembly using [SPAdes](https://github.com/ablab/spades)
+- genome assembly using [SPAdes](https://github.com/ablab/spades) in single-cell or metagenome mode
 - annotation of rRNA genes using [barrnap](https://github.com/tseemann/barrnap), followed by classification based on comparison with the [pr2](https://github.com/pr2database/pr2database) database
 - taxonomic classification using:
 	- [Blobtools](https://github.com/DRL/blobtools)
@@ -98,29 +101,11 @@ This pipeline runs:
 - contig binning using [MetaBAT2](https://bitbucket.org/berkeleylab/metabat)
 - [BUSCO](https://gitlab.com/ezlab/busco)
 - [CheckM](https://github.com/Ecogenomics/CheckM)
-- Optionally, aligns RNA-Seq reads using [hisat2](https://github.com/DaehwanKimLab/hisat2) and assembles transcripts using [StringTie2](https://github.com/gpertea/stringtie)
+- Optionally, aligns RNA-Seq reads using [hisat2](https://github.com/DaehwanKimLab/hisat2) and assembles transcripts using [StringTie2](https://github.com/gpertea/stringtie). RNA-Seq reads can come from any source (e.g., single-cell, metatranscriptome, or isolate RNA-Seq)
 
 ---
 
-The Singularity definition file `Singularity.def` contains some of the required software:
-
-- spades
-- bbmap
-- quast
-- emboss
-- minimap2
-- samtools
-- qualimap
-- hisat2
-- stringtie
-- metabat2
-- barrnap
-- diamond
-- blast
-- checkm-genome
-- cat
-
-Additional software requirements not included in the definition file (due to compatbility issues):
+The Singularity definition file `Singularity.def` contains most of the required software. Additional software requirements not included in the definition file (due to compatbility issues):
 
 - [blobtools (v1.1.1)](https://github.com/DRL/blobtools)
 - [busco (v3/4/5)](https://gitlab.com/ezlab/busco)
